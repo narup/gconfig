@@ -1,2 +1,2 @@
 # gconfig
-Spring boot style configuration for Go
+Spring boot style configuration management for Go
