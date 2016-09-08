@@ -114,6 +114,8 @@ func Load() (*GConfig, error) {
 	gc.Profile = loadProfile()
 
 	p := loadPath()
+	flag.Parse()
+
 	files, err := ioutil.ReadDir(p)
 	if err != nil {
 		return configError(err, "Error reading config directory in path %s", p)
