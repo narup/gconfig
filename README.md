@@ -1,6 +1,6 @@
 # gconfig
-Spring boot style configuration management for Go
-Note: Only supports *.properties file, working on YAML support
+- Spring boot style configuration management for Go
+- Note: Only supports *.properties file, working on YAML support
 
 Usage
 
