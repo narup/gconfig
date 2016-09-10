@@ -4,7 +4,7 @@
 Note: Only supports *.properties file, working on YAML support
 
 ### Usage
-
+    ```go
     // Profile can be set using 2 ways:
     // 1. Environment variable 'GC_PROFILE' eg: export GC_PROFILE='dev'
     // 2. Command line argument 'profile' eg: go run myserver.go -profile=dev
@@ -25,7 +25,9 @@ Note: Only supports *.properties file, working on YAML support
 	host := cfg.GetString("maindb.host")
 	port := cfg.GetInt("maindb.port")
 
-   ### Pass command0-line flags
+```
+
+### Pass command line flags
    ```go
 	go run main.go -profile=stage -path=/Users/puran/server/config
    ```
