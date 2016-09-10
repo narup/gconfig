@@ -113,9 +113,12 @@ func Load() (*GConfig, error) {
 	gc := new(GConfig)
 	gc.Profile = loadProfile()
 
-	p := loadPath()
-	flag.Parse()
+	p, err := loadPath()
+	if err != nil {
+		return configError(err, "Error reading config directory path %s", p)
+	}
 
+	flag.Parse()
 	files, err := ioutil.ReadDir(p)
 	if err != nil {
 		return configError(err, "Error reading config directory in path %s", p)
@@ -190,11 +193,52 @@ func loadProfile() string {
 
 //Check if location of config or properties file is set in the env variable
 //if no path is specified it will use the current directory
-func loadPath() string {
+func loadPath() (string, error) {
+	gp, err := getGoPath()
+	if err != nil {
+		return "", err
+	}
+
+	defaultPath := gp + "/config"
+
 	path := os.Getenv("GC_PATH")
 	if len(path) == 0 {
-		p := flag.String("path", "./config", "-path=/Users/puran/myserver/config")
+		p := flag.String("path", defaultPath, "-path=/Users/puran/myserver/config")
 		path = *p
 	}
-	return path
+
+	return path, nil
 }
+
+// getGoPath returns a single GOPATH. If there are multiple defined in the users
+// $GOPATH env variable, then getGoPath validates that the working directory is
+// part of one of the GOPATHs, and uses the first one it finds that does.
+func getGoPath() (string, error) {
+	wd, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+
+	gopath := os.Getenv("GOPATH")
+	if gopath == "" {
+		return "", fmt.Errorf("GOPATH not set, it's needed to run go program.")
+	}
+
+	// Split out multiple GOPATHs if necessary
+	if s.Contains(gopath, ":") {
+		paths := s.Split(gopath, ":")
+		for _, path := range paths {
+			if s.Contains(wd, path) {
+				gopath = path
+				break
+			}
+		}
+	}
+
+	if !s.Contains(wd, gopath) {
+		return "", fmt.Errorf("gconfig can only be executed within a directory in"+
+			" the GOPATH, wd: %s, gopath: %s", wd, gopath)
+	}
+	return gopath, nil
+}
+
