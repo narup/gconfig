@@ -1,6 +1,7 @@
-# gconfig
-- Spring boot style configuration management for Go
-- Note: Only supports *.properties file, working on YAML support
+# gconfig 
+## Spring boot style configuration management for Go
+
+Note: Only supports *.properties file, working on YAML support
 
 Usage
 
@@ -24,3 +25,6 @@ Usage
 	host := cfg.GetString("maindb.host")
 	port := cfg.GetInt("maindb.port")
 
+   //Pass command0-line flags
+   go run main.go -profile=stage -path=/Users/puran/server/config
+   
