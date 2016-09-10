@@ -29,6 +29,11 @@ const (
 )
 
 var Gcg *GConfig
+
+// Command line profile and path flags that can be passed when running the application
+var cpath *string
+var profile *string
+
 var ConfigFileRequired = errors.New("At least one configuration file is required")
 
 // configFile is a internal representation of individual configurations for default and env specific
@@ -109,6 +114,13 @@ func configError(cause error, format string, args ...interface{}) (*GConfig, err
 	return new(GConfig), errors.Wrap(cause, fmt.Sprintf(format, args...))
 }
 
+func init() {
+	cpath = flag.String("path", "", "-path=/Users/puran/myserver/config")
+	profile = flag.String("profile", "", "-profile=dev")
+
+	flag.Parse()
+}
+
 func Load() (*GConfig, error) {
 	gc := new(GConfig)
 	gc.Profile = loadProfile()
@@ -118,19 +130,19 @@ func Load() (*GConfig, error) {
 		return configError(err, "Error reading config directory path %s", p)
 	}
 
-	flag.Parse()
 	files, err := ioutil.ReadDir(p)
 	if err != nil {
-		return configError(err, "Error reading config directory in path %s", p)
+		return configError(err, "Error reading config directory in path %s", cpath)
 	}
 	if len(files) == 0 {
-		return configError(ConfigFileRequired, "Config file not found in path %s", p)
+		return configError(ConfigFileRequired, "Config file not found in path %s", cpath)
 	}
 
 	//read individual config file
 	for _, f := range files {
 		cfpath := filepath.Join(p, f.Name())
 		if path.Ext(f.Name()) == PROP_EXTENSION {
+			fmt.Println(cfpath)
 			cf, err := readPropertyFile(f, cfpath)
 			if err != nil {
 				return configError(err, "Error opening config file %s", f)
@@ -181,30 +193,29 @@ func readPropertyFile(fi os.FileInfo, cfpath string) (configFile, error) {
 // 1. Environment variable 'GC_PROFILE' eg: export GC_PROFILE='dev'
 // 2. Command line argument 'profile' eg: go run myserver.go -profile=dev
 func loadProfile() string {
-	//Load application profile from environment variable
-	profile := os.Getenv("GC_PROFILE")
-	if len(profile) == 0 {
-		p := flag.String("profile", "local", "-profile=dev")
-		profile = *p
+	p := ""
+	if len(*profile) == 0 {
+		//Load application profile from environment variable
+		p = os.Getenv("GC_PROFILE")
+	} else {
+		p = *profile
 	}
 
-	return s.ToLower(profile)
+	return s.ToLower(p)
 }
 
 //Check if location of config or properties file is set in the env variable
 //if no path is specified it will use the current directory
 func loadPath() (string, error) {
-	gp, err := getGoPath()
-	if err != nil {
-		return "", err
-	}
-
-	defaultPath := gp + "/config"
-
-	path := os.Getenv("GC_PATH")
-	if len(path) == 0 {
-		p := flag.String("path", defaultPath, "-path=/Users/puran/myserver/config")
-		path = *p
+	path := ""
+	if len(*cpath) == 0 {
+		gp, err := getGoPath()
+		if err != nil {
+			return "", err
+		}
+		path = gp + "/config"
+	} else {
+		path = *cpath
 	}
 
 	return path, nil
@@ -241,4 +252,3 @@ func getGoPath() (string, error) {
 	}
 	return gopath, nil
 }
-
