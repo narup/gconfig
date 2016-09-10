@@ -1,6 +1,7 @@
 # gconfig
 Spring boot style configuration management for Go
-
+Note: Only supports *.properties file, working on YAML support
+ 
 Usage
 
     // Profile can be set using 2 ways:
