@@ -90,7 +90,10 @@ func (c GConfig) GetBool(key string) bool {
 // getValue returns a value for a given key as type interface which is converted to actual return type by
 // individual Get* functions.
 func (c GConfig) getValue(key string) string {
-	v := c.profileConfig.configs[key]
+	v := c.defaultConfig.configs[key]
+	if s.Contains(c.profileConfig.fileInfo.Name(), c.Profile) {
+		v = c.profileConfig.configs[key]
+	}
 	if v == nil {
 		v = c.defaultConfig.configs[key]
 	}
@@ -142,7 +145,6 @@ func Load() (*GConfig, error) {
 	for _, f := range files {
 		cfpath := filepath.Join(p, f.Name())
 		if path.Ext(f.Name()) == PROP_EXTENSION {
-			fmt.Println(cfpath)
 			cf, err := readPropertyFile(f, cfpath)
 			if err != nil {
 				return configError(err, "Error opening config file %s", f)
