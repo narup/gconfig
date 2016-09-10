@@ -3,7 +3,7 @@
 
 Note: Only supports *.properties file, working on YAML support
 
-### Usage
+### Code example
 ```go
     // Profile can be set using 2 ways:
     // 1. Environment variable 'GC_PROFILE' eg: export GC_PROFILE='dev'
@@ -27,7 +27,7 @@ Note: Only supports *.properties file, working on YAML support
 
 ```
 
-### Pass command line flags
+### Usage: command line flags
 ```go
 	go run main.go -profile=stage -path=/Users/puran/server/config
 ```
