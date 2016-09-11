@@ -91,7 +91,7 @@ func (c GConfig) GetBool(key string) bool {
 // individual Get* functions.
 func (c GConfig) getValue(key string) string {
 	v := c.defaultConfig.configs[key]
-	if s.Contains(c.profileConfig.fileInfo.Name(), c.Profile) {
+	if c.profileConfig.fileInfo != nil && s.Contains(c.profileConfig.fileInfo.Name(), c.Profile) {
 		v = c.profileConfig.configs[key]
 	}
 	if v == nil {
@@ -203,6 +203,9 @@ func loadProfile() string {
 		p = *profile
 	}
 
+	if len(p) == 0 {
+		p = "local"
+	}
 	return s.ToLower(p)
 }
 
@@ -211,13 +214,18 @@ func loadProfile() string {
 func loadPath() (string, error) {
 	path := ""
 	if len(*cpath) == 0 {
+		path = os.Getenv("GC_PATH")
+	} else {
+		path = *cpath
+	}
+
+	//if empty, load default config path
+	if len(path) == 0 {
 		gp, err := getGoPath()
 		if err != nil {
 			return "", err
 		}
 		path = gp + "/config"
-	} else {
-		path = *cpath
 	}
 
 	return path, nil
