@@ -4,7 +4,6 @@
 // 1. application.properties: this holds all the default configuration values as key/value pair.
 // 2. application-{profile}.properties. contains all the environment specific configuration values.
 //    eg: for prod environment, application-prod.properties
-
 package gconfig
 
 import (
@@ -17,24 +16,30 @@ import (
 	"path"
 	s "strings"
 
-	"github.com/pkg/errors"
 	"path/filepath"
 	"strconv"
+
+	"github.com/pkg/errors"
 )
 
 const (
-	PROP_EXTENSION         string = ".properties"
-	DEFAULT_PROP_FILENAME  string = "application-default.properties"
-	STANDARD_PROP_FILENAME string = "application.properties"
+	// PropertiesExtension defines extension for properties file
+	PropertiesExtension string = ".properties"
+	// DefaultPropFileName default properties file name
+	DefaultPropFileName string = "application-default.properties"
+	// StandardPropFileName standard properties file if default is not defined
+	StandardPropFileName string = "application.properties"
 )
 
+//Gcg is a global variable that represents configuration
 var Gcg *GConfig
 
 // Command line profile and path flags that can be passed when running the application
 var cpath *string
 var profile *string
 
-var ConfigFileRequired = errors.New("At least one configuration file is required")
+// ErrConfigFileRequired represents file required error
+var ErrConfigFileRequired = errors.New("At least one configuration file is required")
 
 // configFile is a internal representation of individual configurations for default and env specific
 // configuration values.
@@ -55,7 +60,7 @@ func (cf *configFile) addProperty(key, value string) {
 }
 
 func (cf configFile) isDefault() bool {
-	if cf.Name() == DEFAULT_PROP_FILENAME || cf.Name() == STANDARD_PROP_FILENAME {
+	if cf.Name() == DefaultPropFileName || cf.Name() == StandardPropFileName {
 		return true
 	}
 	return false
@@ -68,27 +73,31 @@ type GConfig struct {
 	profileConfig, defaultConfig configFile
 }
 
+// GetString returns string value for the given key
 func (c GConfig) GetString(key string) string {
 	return c.getValue(key)
 }
 
+// GetInt returns int value for the given key
 func (c GConfig) GetInt(key string) int {
 	i, _ := strconv.Atoi(c.getValue(key))
 	return i
 }
 
+// GetFloat returns float value for the given key
 func (c GConfig) GetFloat(key string) float64 {
 	v, _ := strconv.ParseFloat(c.getValue(key), 32)
 	return v
 }
 
+// GetBool returns bool value for the given key
 func (c GConfig) GetBool(key string) bool {
 	b, _ := strconv.ParseBool(c.getValue(key))
 	return b
 }
 
-// getValue returns a value for a given key as type interface which is converted to actual return type by
-// individual Get* functions.
+// getValue returns a value for a given key as type interface which is converted
+// to actual return type by individual Get* functions.
 func (c GConfig) getValue(key string) string {
 	v := c.defaultConfig.configs[key]
 	if c.profileConfig.fileInfo != nil && s.Contains(c.profileConfig.fileInfo.Name(), c.Profile) {
@@ -124,6 +133,9 @@ func init() {
 	flag.Parse()
 }
 
+// Load reads all the properties and creates GConfig representation. It loads
+// config data based on passed in flags or environment variables. If none is
+// defined it uses default values.
 func Load() (*GConfig, error) {
 	gc := new(GConfig)
 	gc.Profile = loadProfile()
@@ -138,13 +150,13 @@ func Load() (*GConfig, error) {
 		return configError(err, "Error reading config directory in path %s", cpath)
 	}
 	if len(files) == 0 {
-		return configError(ConfigFileRequired, "Config file not found in path %s", cpath)
+		return configError(ErrConfigFileRequired, "Config file not found in path %s", cpath)
 	}
 
 	//read individual config file
 	for _, f := range files {
 		cfpath := filepath.Join(p, f.Name())
-		if path.Ext(f.Name()) == PROP_EXTENSION {
+		if path.Ext(f.Name()) == PropertiesExtension {
 			cf, err := readPropertyFile(f, cfpath)
 			if err != nil {
 				return configError(err, "Error opening config file %s", f)
@@ -242,7 +254,7 @@ func getGoPath() (string, error) {
 
 	gopath := os.Getenv("GOPATH")
 	if gopath == "" {
-		return "", fmt.Errorf("GOPATH not set, it's needed to run go program.")
+		return "", fmt.Errorf("GOPATH not set, it's needed to run go program")
 	}
 
 	// Split out multiple GOPATHs if necessary
