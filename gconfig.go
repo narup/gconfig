@@ -129,14 +129,15 @@ func configError(cause error, format string, args ...interface{}) (*GConfig, err
 func init() {
 	cpath = flag.String("path", "", "-path=/Users/puran/myserver/config")
 	profile = flag.String("profile", "", "-profile=dev")
-
-	flag.Parse()
 }
 
 // Load reads all the properties and creates GConfig representation. It loads
 // config data based on passed in flags or environment variables. If none is
 // defined it uses default values.
 func Load() (*GConfig, error) {
+
+	flag.Parse()
+
 	gc := new(GConfig)
 	gc.Profile = loadProfile()
 
@@ -239,6 +240,8 @@ func loadPath() (string, error) {
 		}
 		path = gp + "/config"
 	}
+
+	log.Printf("Loading configuration file from path %s\n", path)
 
 	return path, nil
 }
