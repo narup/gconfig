@@ -34,6 +34,7 @@ func TestLoad(t *testing.T) {
 
 	expectedName := "gconfig test"
 	n := gcg.GetString("app.name")
+	println(n)
 	if n != expectedName {
 		t.Errorf("Key app.name didn't match expected value %s\n", expectedName)
 	}
@@ -61,7 +62,7 @@ func TestProfileLoad(t *testing.T) {
 	}
 	fmt.Printf("app.name: %s\n", n)
 
-	expectedURL := "https://github.com/narup/gconfig"
+	expectedURL := "https://github.com/narup/gconfig-dev"
 	u := gcg.GetString("app.url")
 	if u != expectedURL {
 		t.Errorf("Key app.url didn't match expected value %s\n", expectedURL)

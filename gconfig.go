@@ -1,4 +1,4 @@
-// Package gconfig - Spring boot style configuration manager. It can load either properties or yaml formatted files.
+// Package gconfig - Spring boot style configuration manager. It can load properties files.
 // properties file should follow the naming convention:
 //
 // 1. application.properties: this holds all the default configuration values as key/value pair.
@@ -13,7 +13,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"path"
 	s "strings"
 
 	"path/filepath"
@@ -25,8 +24,6 @@ import (
 const (
 	// PropertiesExtension defines extension for properties file
 	PropertiesExtension string = ".properties"
-	// DefaultPropFileName default properties file name
-	DefaultPropFileName string = "application-default.properties"
 	// StandardPropFileName standard properties file if default is not defined
 	StandardPropFileName string = "application.properties"
 )
@@ -60,7 +57,7 @@ func (cf *configFile) addProperty(key, value string) {
 }
 
 func (cf configFile) isDefault() bool {
-	if cf.Name() == DefaultPropFileName || cf.Name() == StandardPropFileName {
+	if cf.Name() == StandardPropFileName {
 		return true
 	}
 	return false
@@ -172,7 +169,8 @@ func Load() (*GConfig, error) {
 	//read individual config file
 	for _, f := range files {
 		cfpath := filepath.Join(p, f.Name())
-		if path.Ext(f.Name()) == PropertiesExtension {
+		pf := fmt.Sprintf("application-%s.properties", gc.Profile)
+		if f.Name() == StandardPropFileName || pf == f.Name() {
 			cf, err := readPropertyFile(f, cfpath)
 			if err != nil {
 				return configError(err, "Error opening config file %s", f)
@@ -229,10 +227,6 @@ func loadProfile() string {
 		p = os.Getenv("GC_PROFILE")
 	} else {
 		p = *profile
-	}
-
-	if len(p) == 0 {
-		p = "local"
 	}
 	return s.ToLower(p)
 }
