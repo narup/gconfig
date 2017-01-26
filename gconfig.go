@@ -75,30 +75,45 @@ type GConfig struct {
 
 // GetString returns string value for the given key
 func (c GConfig) GetString(key string) string {
-	return c.getValue(key)
+	return c.getStringValue(key)
 }
 
 // GetInt returns int value for the given key
 func (c GConfig) GetInt(key string) int {
-	i, _ := strconv.Atoi(c.getValue(key))
+	i, _ := strconv.Atoi(c.getStringValue(key))
 	return i
 }
 
 // GetFloat returns float value for the given key
 func (c GConfig) GetFloat(key string) float64 {
-	v, _ := strconv.ParseFloat(c.getValue(key), 32)
+	v, _ := strconv.ParseFloat(c.getStringValue(key), 32)
 	return v
 }
 
 // GetBool returns bool value for the given key
 func (c GConfig) GetBool(key string) bool {
-	b, _ := strconv.ParseBool(c.getValue(key))
+	b, _ := strconv.ParseBool(c.getStringValue(key))
 	return b
 }
 
-// getValue returns a value for a given key as type interface which is converted
+// Exists checks if key exists
+func (c GConfig) Exists(key string) bool {
+	v := c.getValue(key)
+	if v != nil {
+		return true
+	}
+	return false
+}
+
+// getStringValue returns a value for a given key as type interface which is converted
 // to actual return type by individual Get* functions.
-func (c GConfig) getValue(key string) string {
+func (c GConfig) getStringValue(key string) string {
+	v := c.getValue(key)
+	return v.(string)
+}
+
+// getValue gets the raw value for a given key
+func (c GConfig) getValue(key string) interface{} {
 	v := c.defaultConfig.configs[key]
 	if c.profileConfig.fileInfo != nil && s.Contains(c.profileConfig.fileInfo.Name(), c.Profile) {
 		v = c.profileConfig.configs[key]
@@ -107,7 +122,7 @@ func (c GConfig) getValue(key string) string {
 		v = c.defaultConfig.configs[key]
 	}
 
-	return v.(string)
+	return v
 }
 
 func (c *GConfig) addConfigFile(cf configFile) {
