@@ -69,4 +69,7 @@ func TestProfileLoad(t *testing.T) {
 	}
 
 	fmt.Printf("app.url: %s\n", expectedURL)
+
+	envVariable := gcg.GetString("myEnv.variable")
+	fmt.Printf(envVariable)
 }

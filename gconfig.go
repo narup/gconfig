@@ -106,7 +106,12 @@ func (c GConfig) Exists(key string) bool {
 // to actual return type by individual Get* functions.
 func (c GConfig) getStringValue(key string) string {
 	v := c.getValue(key)
-	return v.(string)
+	strV := v.(string)
+	if s.HasPrefix(strV, "${") && s.HasSuffix(strV, "}") {
+		return os.ExpandEnv(strV)
+	}
+
+	return strV
 }
 
 // getValue gets the raw value for a given key

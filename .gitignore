@@ -1,3 +1,5 @@
 .vscode/
 glide.lock
 vendor/
+.idea/
+dump.rdb
