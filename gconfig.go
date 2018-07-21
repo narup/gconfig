@@ -212,8 +212,14 @@ func readPropertyFile(fi os.FileInfo, cfpath string) (configFile, error) {
 	for sc.Scan() {
 		l := sc.Text()
 		kv := s.Split(l, "=")
-		if len(kv) == 2 {
+		if len(kv) < 2 {
+			continue
+		} else if len(kv) == 2 {
 			cf.addProperty(kv[0], kv[1])
+		} else {
+			//= after first is all part of the value
+			pv := s.Replace(l, fmt.Sprintf("%s=", kv[0]), "", -1)
+			cf.addProperty(kv[0], pv)
 		}
 	}
 
