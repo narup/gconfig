@@ -165,10 +165,20 @@ func Load() (*GConfig, error) {
 
 	files, err := ioutil.ReadDir(p)
 	if err != nil {
-		return configError(err, "Error reading config directory in path %s", cpath)
+		log.Printf("Error loading config files from the path: %s. Trying from the working directory", p)
+		wd, err := os.Getwd()
+		if err != nil {
+			return nil, err
+		}
+		p = fmt.Sprintf("%s/config", wd)
+		files, err = ioutil.ReadDir(p)
+		if err != nil {
+			return configError(err, "Error reading config directory in path %s", p)
+		}
 	}
+
 	if len(files) == 0 {
-		return configError(ErrConfigFileRequired, "Config file not found in path %s", cpath)
+		return configError(ErrConfigFileRequired, "Config file not found in path %s", *cpath)
 	}
 
 	//read individual config file
@@ -276,10 +286,6 @@ func getGoPath() (string, error) {
 	}
 
 	gopath := os.Getenv("GOPATH")
-	if gopath == "" {
-		return "", fmt.Errorf("GOPATH not set, it's needed to run go program")
-	}
-
 	// Split out multiple GOPATHs if necessary
 	if s.Contains(gopath, ":") {
 		paths := s.Split(gopath, ":")
@@ -291,9 +297,5 @@ func getGoPath() (string, error) {
 		}
 	}
 
-	if !s.Contains(wd, gopath) {
-		return "", fmt.Errorf("gconfig can only be executed within a directory in"+
-			" the GOPATH, wd: %s, gopath: %s", wd, gopath)
-	}
 	return gopath, nil
 }
