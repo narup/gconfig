@@ -70,7 +70,7 @@ func TestProfileLoad(t *testing.T) {
 
 	envVariable := gcg.GetString("myEnv.variable")
 	if strings.Trim(envVariable, " ") != "" {
-		t.Errorf("Key app.name didn't match expected value %s\n", "default")
+		t.Errorf("Key value should be absent but it is %s", envVariable)
 	}
 }
 
