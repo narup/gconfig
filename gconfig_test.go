@@ -76,7 +76,7 @@ func TestProfileLoad(t *testing.T) {
 
 func TestGetStringOrDefault(t *testing.T) {
 	gcg := setup("dev", t)
-	envVariable := gcg.GetStringOrDefault("myEnv.variable.ordefault")
+	envVariable := gcg.GetStringOrDefault("myEnv.variable.withDefault")
 	if envVariable != "default" {
 		t.Errorf("Key app.name didn't match expected value %s\n", "default")
 	}
