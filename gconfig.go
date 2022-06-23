@@ -155,19 +155,6 @@ func (c GConfig) getValue(key string) interface{} {
 	return v
 }
 
-// getValue gets the raw value for a given key
-func (c GConfig) getValueOrNil(key string) interface{} {
-	v := c.defaultConfig.configs[key]
-	if c.profileConfig.fileInfo != nil && s.Contains(c.profileConfig.fileInfo.Name(), c.Profile) {
-		v = c.profileConfig.configs[key]
-	}
-	if v == nil {
-		return nil
-	}
-
-	return v
-}
-
 func (c *GConfig) addConfigFile(cf configFile) {
 	if cf.isDefault() {
 		c.defaultConfig = cf
