@@ -75,6 +75,11 @@ func (c GConfig) GetString(key string) string {
 	return c.getStringValue(key)
 }
 
+// GetString returns string value for the given key
+func (c GConfig) GetStringOrDefault(key string) string {
+	return c.getStringOrDefaultValue(key)
+}
+
 // GetInt returns int value for the given key
 func (c GConfig) GetInt(key string) int {
 	i, _ := strconv.Atoi(c.getStringValue(key))
@@ -114,6 +119,29 @@ func (c GConfig) getStringValue(key string) string {
 	return strV
 }
 
+// getStringValue returns a value for a given key as type interface which is converted
+// to actual return type by individual Get* functions.
+func (c GConfig) getStringOrDefaultValue(key string) string {
+	v := c.getValue(key)
+	strV := v.(string)
+	if s.HasPrefix(strV, "${") && s.HasSuffix(strV, "}") {
+		mainKey := s.TrimLeft(s.TrimRight(strV, "}"), "${")
+		keySplitter := s.Split(mainKey, "|")
+		if len(keySplitter) >= 2 {
+			configValue := os.ExpandEnv(fmt.Sprintf("${%s}", keySplitter[0]))
+			if len(configValue) == 0 {
+				return keySplitter[1]
+			}
+			return configValue
+		} else {
+			return os.ExpandEnv(strV)
+		}
+
+	}
+
+	return strV
+}
+
 // getValue gets the raw value for a given key
 func (c GConfig) getValue(key string) interface{} {
 	v := c.defaultConfig.configs[key]
@@ -122,6 +150,19 @@ func (c GConfig) getValue(key string) interface{} {
 	}
 	if v == nil {
 		v = c.defaultConfig.configs[key]
+	}
+
+	return v
+}
+
+// getValue gets the raw value for a given key
+func (c GConfig) getValueOrNil(key string) interface{} {
+	v := c.defaultConfig.configs[key]
+	if c.profileConfig.fileInfo != nil && s.Contains(c.profileConfig.fileInfo.Name(), c.Profile) {
+		v = c.profileConfig.configs[key]
+	}
+	if v == nil {
+		return nil
 	}
 
 	return v

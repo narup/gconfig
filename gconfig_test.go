@@ -3,6 +3,7 @@ package gconfig
 import (
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -60,7 +61,6 @@ func TestProfileLoad(t *testing.T) {
 	if n != expectedName {
 		t.Errorf("Key app.name didn't match expected value %s\n", expectedName)
 	}
-	fmt.Printf("app.name: %s\n", n)
 
 	expectedURL := "https://github.com/narup/gconfig-dev"
 	u := gcg.GetString("app.url")
@@ -68,8 +68,16 @@ func TestProfileLoad(t *testing.T) {
 		t.Errorf("Key app.url didn't match expected value %s\n", expectedURL)
 	}
 
-	fmt.Printf("app.url: %s\n", expectedURL)
-
 	envVariable := gcg.GetString("myEnv.variable")
-	fmt.Printf(envVariable)
+	if strings.Trim(envVariable, " ") != "" {
+		t.Errorf("Key app.name didn't match expected value %s\n", "default")
+	}
+}
+
+func TestGetStringOrDefault(t *testing.T) {
+	gcg := setup("dev", t)
+	envVariable := gcg.GetStringOrDefault("myEnv.variable.ordefault")
+	if envVariable != "default" {
+		t.Errorf("Key app.name didn't match expected value %s\n", "default")
+	}
 }
