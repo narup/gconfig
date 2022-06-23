@@ -13,7 +13,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"strings"
 	s "strings"
 
 	"path/filepath"
@@ -157,7 +156,6 @@ func (c GConfig) getValue(key string) interface{} {
 }
 
 func (c *GConfig) addConfigFile(cf configFile) {
-	strings.
 	if cf.isDefault() {
 		c.defaultConfig = cf
 	} else {
