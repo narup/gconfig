@@ -13,6 +13,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"regexp"
 	s "strings"
 
 	"path/filepath"
@@ -80,6 +81,11 @@ func (c GConfig) GetStringOrDefault(key string) string {
 	return c.getStringOrDefaultValue(key)
 }
 
+// GetString returns string value for the given key
+func (c GConfig) GetStringOrDefaultInCommaSeparator(key string) string {
+	return c.replaceSysVars(key)
+}
+
 // GetInt returns int value for the given key
 func (c GConfig) GetInt(key string) int {
 	i, _ := strconv.Atoi(c.getStringValue(key))
@@ -124,6 +130,11 @@ func (c GConfig) getStringValue(key string) string {
 func (c GConfig) getStringOrDefaultValue(key string) string {
 	v := c.getValue(key)
 	strV := v.(string)
+	return commonHelper(strV)
+
+}
+
+func commonHelper(strV string) string {
 	if s.HasPrefix(strV, "${") && s.HasSuffix(strV, "}") {
 		mainKey := s.TrimLeft(s.TrimRight(strV, "}"), "${")
 		keySplitter := s.Split(mainKey, "|")
@@ -142,14 +153,33 @@ func (c GConfig) getStringOrDefaultValue(key string) string {
 	return strV
 }
 
+func (c GConfig) replaceSysVars(key string) string {
+	value := c.getValue(key)
+	re := regexp.MustCompile(`\${[^}]+}`)
+	return re.ReplaceAllStringFunc(value.(string), c.replaceSysVarsHelper)
+}
+
+func (c GConfig) replaceSysVarsHelper(value string) string {
+	value = s.Replace(value, "${", "", 1)
+	value = s.Replace(value, "}", "", 1)
+	parts := s.Split(value, "|")
+	v := ""
+	if val := commonHelper(fmt.Sprintf("${%s}", parts[0])); val != "" {
+		v = val
+	} else {
+		v = parts[1]
+	}
+	return v
+}
+
 // getValue gets the raw value for a given key
-func (c GConfig) getValue(key string) interface{} {
-	v := c.defaultConfig.configs[key]
+func (c GConfig) getValue(value string) interface{} {
+	v := c.defaultConfig.configs[value]
 	if c.profileConfig.fileInfo != nil && s.Contains(c.profileConfig.fileInfo.Name(), c.Profile) {
-		v = c.profileConfig.configs[key]
+		v = c.profileConfig.configs[value]
 	}
 	if v == nil {
-		v = c.defaultConfig.configs[key]
+		v = c.defaultConfig.configs[value]
 	}
 
 	return v

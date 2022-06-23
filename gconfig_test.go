@@ -81,3 +81,23 @@ func TestGetStringOrDefault(t *testing.T) {
 		t.Errorf("Key app.name didn't match expected value %s\n", "default")
 	}
 }
+
+func TestGetStringOrDefaultInCommaSeparator(t *testing.T) {
+	gcg := setup("dev", t)
+	envVariable := gcg.GetStringOrDefaultInCommaSeparator("myEnv.variable.listwithDefault")
+	expectedString := "http://localhost:9292, http://localhost:3000, http://localhost:8080, https://int.dev.phil.us/, https://my.dev.phil.us, https://ops.dev.phil.us, https://web.dev.phil.us, https://md.dev.phil.us, https://us.dev.phil.us,https://workflow.dev.phil.us, https://data.dev.phil.us, https://gifted-goldberg-e5cca9.netlify.app"
+	if strings.Trim(envVariable, " ") != strings.Trim(expectedString, " ") {
+		t.Errorf("Key app.name didn't match expected value %s\n", expectedString)
+	}
+}
+
+func TestGetStringOrDefaultInCommaSeparatorWithEnvValue(t *testing.T) {
+	os.Setenv("DATA_DASHBOARD_ENDPOINT", "http://dataDashTest")
+	gcg := setup("dev", t)
+
+	envVariable := gcg.GetStringOrDefaultInCommaSeparator("myEnv.variable.listwithDefault")
+	expectedString := "http://localhost:9292, http://localhost:3000, http://localhost:8080, https://int.dev.phil.us/, https://my.dev.phil.us, https://ops.dev.phil.us, https://web.dev.phil.us, https://md.dev.phil.us, https://us.dev.phil.us,https://workflow.dev.phil.us, http://dataDashTest, https://gifted-goldberg-e5cca9.netlify.app"
+	if strings.Trim(envVariable, " ") != strings.Trim(expectedString, " ") {
+		t.Errorf("Key app.name didn't match expected value %s\n", expectedString)
+	}
+}
