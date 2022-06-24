@@ -3,6 +3,7 @@ package gconfig
 import (
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -60,7 +61,6 @@ func TestProfileLoad(t *testing.T) {
 	if n != expectedName {
 		t.Errorf("Key app.name didn't match expected value %s\n", expectedName)
 	}
-	fmt.Printf("app.name: %s\n", n)
 
 	expectedURL := "https://github.com/narup/gconfig-dev"
 	u := gcg.GetString("app.url")
@@ -68,8 +68,36 @@ func TestProfileLoad(t *testing.T) {
 		t.Errorf("Key app.url didn't match expected value %s\n", expectedURL)
 	}
 
-	fmt.Printf("app.url: %s\n", expectedURL)
-
 	envVariable := gcg.GetString("myEnv.variable")
-	fmt.Printf(envVariable)
+	if strings.Trim(envVariable, " ") != "" {
+		t.Errorf("Key value should be absent but it is %s", envVariable)
+	}
+}
+
+func TestGetStringOrDefault(t *testing.T) {
+	gcg := setup("dev", t)
+	envVariable := gcg.GetStringOrDefault("myEnv.variable.withDefault")
+	if envVariable != "default" {
+		t.Errorf("Key app.name didn't match expected value %s\n", "default")
+	}
+}
+
+func TestGetStringOrDefaultInCommaSeparator(t *testing.T) {
+	gcg := setup("dev", t)
+	envVariable := gcg.GetStringOrDefaultInCommaSeparator("myEnv.variable.listwithDefault")
+	expectedString := "http://localhost:9292, http://localhost:3000, http://localhost:8080, https://int.dev.phil.us/, https://my.dev.phil.us, https://ops.dev.phil.us, https://web.dev.phil.us, https://md.dev.phil.us, https://us.dev.phil.us,https://workflow.dev.phil.us, https://data.dev.phil.us, https://gifted-goldberg-e5cca9.netlify.app"
+	if strings.Trim(envVariable, " ") != strings.Trim(expectedString, " ") {
+		t.Errorf("Key app.name didn't match expected value %s\n", expectedString)
+	}
+}
+
+func TestGetStringOrDefaultInCommaSeparatorWithEnvValue(t *testing.T) {
+	os.Setenv("DATA_DASHBOARD_ENDPOINT", "http://dataDashTest")
+	gcg := setup("dev", t)
+
+	envVariable := gcg.GetStringOrDefaultInCommaSeparator("myEnv.variable.listwithDefault")
+	expectedString := "http://localhost:9292, http://localhost:3000, http://localhost:8080, https://int.dev.phil.us/, https://my.dev.phil.us, https://ops.dev.phil.us, https://web.dev.phil.us, https://md.dev.phil.us, https://us.dev.phil.us,https://workflow.dev.phil.us, http://dataDashTest, https://gifted-goldberg-e5cca9.netlify.app"
+	if strings.Trim(envVariable, " ") != strings.Trim(expectedString, " ") {
+		t.Errorf("Key app.name didn't match expected value %s\n", expectedString)
+	}
 }
