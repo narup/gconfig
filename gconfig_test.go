@@ -101,3 +101,26 @@ func TestGetStringOrDefaultInCommaSeparatorWithEnvValue(t *testing.T) {
 		t.Errorf("Key app.name didn't match expected value %s\n", expectedString)
 	}
 }
+
+func TestGetStringOrDefaultInCommaSeparatorWithEnvValueForAllTypes(t *testing.T) {
+	expectedString := "CAPIAPI"
+	os.Setenv("CAPI_API_KEY", expectedString)
+	os.Setenv("CAPI_API_KEY_REG", "CAPI_API_KEY_REG")
+
+	gcg := setup("dev", t)
+
+	envVariable := gcg.GetStringOrDefaultInCommaSeparator("myEnv.variable.withDefault")
+	if strings.Trim(envVariable, " ") != strings.Trim(expectedString, " ") {
+		t.Errorf("Key app.name didn't match expected value %s\n", expectedString)
+	}
+
+	envVariable = gcg.GetStringOrDefaultInCommaSeparator("myEnv.variable")
+	if envVariable != "CAPI_API_KEY_REG" {
+		t.Errorf("Key app.name didn't match expected value %s\n", expectedString)
+	}
+
+	envVariable = gcg.GetStringOrDefaultInCommaSeparator("app.url")
+	if envVariable != "https://github.com/narup/gconfig-dev" {
+		t.Errorf("Key app.name didn't match expected value %s\n", expectedString)
+	}
+}
